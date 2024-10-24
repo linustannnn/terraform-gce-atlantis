@@ -8,15 +8,15 @@ output "cos_image_id" {
   description = "The unique identifier of the Container-Optimized OS image used to create the Compute Engine instance."
 }
 
-output "managed_ssl_certificate_certificate_id" {
-  value       = google_compute_managed_ssl_certificate.default.certificate_id
-  description = "The unique identifier of the Google Managed SSL certificate"
-}
-
-output "managed_ssl_certificate_expire_time" {
-  value       = google_compute_managed_ssl_certificate.default.expire_time
-  description = "Expire time of the Google Managed SSL certificate"
-}
+# output "managed_ssl_certificate_certificate_id" {
+#   value       = google_compute_managed_ssl_certificate.default.certificate_id
+#   description = "The unique identifier of the Google Managed SSL certificate"
+# }
+#
+# output "managed_ssl_certificate_expire_time" {
+#   value       = google_compute_managed_ssl_certificate.default.expire_time
+#   description = "Expire time of the Google Managed SSL certificate"
+# }
 
 output "iap_backend_service_name" {
   value       = var.iap != null ? google_compute_backend_service.iap[0].name : null
