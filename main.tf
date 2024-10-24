@@ -33,6 +33,14 @@ resource "google_project_service" "compute" {
   disable_on_destroy         = true
 }
 
+# Secret Manager API
+resource "google_project_service" "secretmanager" {
+  service                    = "secretmanager.googleapis.com"
+  project                    = local.project_id
+  disable_dependent_services = false
+  disable_on_destroy         = true
+}
+
 # Network configuration
 resource "google_compute_network" "default" {
   name                    = "example-network"
@@ -92,10 +100,10 @@ module "atlantis" {
   # Note: environment variables are shown in the Google Cloud UI
   # See the `examples/secure-env-vars` if you want to protect sensitive information
   env_vars = {
-    ATLANTIS_GH_USER           = var.github_user
-    ATLANTIS_GH_TOKEN          = var.github_token
-    ATLANTIS_GH_WEBHOOK_SECRET = var.github_webhook_secret
-    ATLANTIS_REPO_ALLOWLIST    = var.github_repo_allow_list
+    ATLANTIS_GH_USER           = data.google_secret_manager_secret_version.atlantis_gh_user.secret_data
+    ATLANTIS_GH_TOKEN          = data.google_secret_manager_secret_version.atlantis_gh_token.secret_data
+    ATLANTIS_GH_WEBHOOK_SECRET = data.google_secret_manager_secret_version.atlantis_gh_webhook_secret.secret_data
+    ATLANTIS_REPO_ALLOWLIST    = "github.com/linustannnn/terraform-gce-atlantis"
     ATLANTIS_ATLANTIS_URL      = "http://34.107.167.149" # Use IP here
     ATLANTIS_REPO_CONFIG_JSON  = jsonencode(yamldecode(file("${path.module}/server-atlantis.yaml")))
   }
@@ -115,14 +123,14 @@ module "atlantis" {
 
 data "google_iam_policy" "project" {
   binding {
-    role    = "roles/compute.serviceAgent"
+    role = "roles/compute.serviceAgent"
     members = [
       "serviceAccount:service-899054873817@compute-system.iam.gserviceaccount.com"
     ]
   }
 
   binding {
-    role    = "roles/editor"
+    role = "roles/editor"
     members = [
       "serviceAccount:899054873817-compute@developer.gserviceaccount.com",
       "serviceAccount:899054873817@cloudservices.gserviceaccount.com"
@@ -130,35 +138,35 @@ data "google_iam_policy" "project" {
   }
 
   binding {
-    role    = "roles/logging.logWriter"
+    role = "roles/logging.logWriter"
     members = [
       "serviceAccount:${google_service_account.atlantis.email}"
     ]
   }
 
   binding {
-    role    = "roles/monitoring.metricWriter"
+    role = "roles/monitoring.metricWriter"
     members = [
       "serviceAccount:${google_service_account.atlantis.email}"
     ]
   }
 
   binding {
-    role    = "roles/networkmanagement.serviceAgent"
+    role = "roles/networkmanagement.serviceAgent"
     members = [
       "serviceAccount:service-899054873817@gcp-sa-networkmanagement.iam.gserviceaccount.com"
     ]
   }
 
   binding {
-    role    = "roles/owner"
+    role = "roles/owner"
     members = [
       "user:linustws00@gmail.com"
     ]
   }
 
   binding {
-    role    = "roles/storage.admin"
+    role = "roles/storage.admin"
     members = [
       "user:linustws00@gmail.com"
     ]
@@ -193,4 +201,46 @@ data "google_iam_policy" "terraform_state" {
 resource "google_storage_bucket_iam_policy" "terraform_state" {
   bucket      = google_storage_bucket.terraform_state.name
   policy_data = data.google_iam_policy.terraform_state.policy_data
+}
+
+resource "google_secret_manager_secret" "atlantis_gh_user" {
+  secret_id = "atlantis-gh-user"
+  project   = local.project_id
+
+  replication {
+    auto {}
+  }
+}
+
+data "google_secret_manager_secret_version" "atlantis_gh_user" {
+  secret  = google_secret_manager_secret.atlantis_gh_user.id
+  version = "latest"
+}
+
+resource "google_secret_manager_secret" "atlantis_gh_token" {
+  secret_id = "atlantis-gh-token"
+  project   = local.project_id
+
+  replication {
+    auto {}
+  }
+}
+
+data "google_secret_manager_secret_version" "atlantis_gh_token" {
+  secret  = google_secret_manager_secret.atlantis_gh_token.id
+  version = "latest"
+}
+
+resource "google_secret_manager_secret" "atlantis_gh_webhook_secret" {
+  secret_id = "atlantis-gh-webhook-secret"
+  project   = local.project_id
+
+  replication {
+    auto {}
+  }
+}
+
+data "google_secret_manager_secret_version" "atlantis_gh_webhook_secret" {
+  secret  = google_secret_manager_secret.atlantis_gh_webhook_secret.id
+  version = "latest"
 }
