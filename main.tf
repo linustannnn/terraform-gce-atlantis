@@ -2,12 +2,11 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = ">=6.8.0"
     }
   }
 
   backend "gcs" {
-    bucket = google_storage_bucket.terraform_state.name
+    bucket = "terraform-state-bucket-atlantis-test-439520"
   }
 }
 
