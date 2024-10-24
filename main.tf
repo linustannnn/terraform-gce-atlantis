@@ -41,6 +41,22 @@ resource "google_project_service" "secretmanager" {
   disable_on_destroy         = true
 }
 
+# Identity and Access Management (IAM) API
+resource "google_project_service" "iam" {
+  service                    = "iam.googleapis.com"
+  project                    = local.project_id
+  disable_dependent_services = false
+  disable_on_destroy         = true
+}
+
+# Cloud Resource Manager API
+resource "google_project_service" "cloudresourcemanager" {
+  service                    = "cloudresourcemanager.googleapis.com"
+  project                    = local.project_id
+  disable_dependent_services = false
+  disable_on_destroy         = true
+}
+
 # Network configuration
 resource "google_compute_network" "default" {
   name                    = "example-network"
