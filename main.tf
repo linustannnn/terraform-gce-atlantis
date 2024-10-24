@@ -250,19 +250,6 @@ data "google_secret_manager_secret_version" "atlantis_gh_user" {
   version = "latest"
 }
 
-data "google_iam_policy" "atlantis_gh_user" {
-  binding {
-    role = "roles/secretmanager.secretAccessor"
-    members = [
-      "serviceAccount:${google_service_account.atlantis.email}"
-    ]
-  }
-}
-resource "google_secret_manager_secret_iam_policy" "atlantis_gh_user" {
-  secret_id   = google_secret_manager_secret.atlantis_gh_user.secret_id
-  policy_data = data.google_iam_policy.atlantis_gh_user.policy_data
-}
-
 resource "google_secret_manager_secret" "atlantis_gh_token" {
   secret_id = "atlantis-gh-token"
   project   = local.project_id
@@ -277,19 +264,6 @@ data "google_secret_manager_secret_version" "atlantis_gh_token" {
   version = "latest"
 }
 
-data "google_iam_policy" "atlantis_gh_token" {
-  binding {
-    role = "roles/secretmanager.secretAccessor"
-    members = [
-      "serviceAccount:${google_service_account.atlantis.email}"
-    ]
-  }
-}
-resource "google_secret_manager_secret_iam_policy" "atlantis_gh_token" {
-  secret_id   = google_secret_manager_secret.atlantis_gh_token.secret_id
-  policy_data = data.google_iam_policy.atlantis_gh_token.policy_data
-}
-
 resource "google_secret_manager_secret" "atlantis_gh_webhook_secret" {
   secret_id = "atlantis-gh-webhook-secret"
   project   = local.project_id
@@ -302,17 +276,4 @@ resource "google_secret_manager_secret" "atlantis_gh_webhook_secret" {
 data "google_secret_manager_secret_version" "atlantis_gh_webhook_secret" {
   secret  = google_secret_manager_secret.atlantis_gh_webhook_secret.id
   version = "latest"
-}
-
-data "google_iam_policy" "atlantis_gh_webhook_secret" {
-  binding {
-    role = "roles/secretmanager.secretAccessor"
-    members = [
-      "serviceAccount:${google_service_account.atlantis.email}"
-    ]
-  }
-}
-resource "google_secret_manager_secret_iam_policy" "atlantis_gh_webhook_secret" {
-  secret_id   = google_secret_manager_secret.atlantis_gh_webhook_secret.secret_id
-  policy_data = data.google_iam_policy.atlantis_gh_webhook_secret.policy_data
 }
