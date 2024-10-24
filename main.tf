@@ -25,18 +25,6 @@ resource "google_service_account" "atlantis" {
   project      = local.project_id
 }
 
-resource "google_project_iam_member" "atlantis_log_writer" {
-  role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.atlantis.email}"
-  project = local.project_id
-}
-
-resource "google_project_iam_member" "atlantis_metric_writer" {
-  role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.atlantis.email}"
-  project = local.project_id
-}
-
 # Compute Engine API
 resource "google_project_service" "compute" {
   service                    = "compute.googleapis.com"
@@ -125,6 +113,63 @@ module "atlantis" {
 
 #---------------------------------------------------------------#
 
+data "google_iam_policy" "project" {
+  binding {
+    role    = "roles/compute.serviceAgent"
+    members = [
+      "serviceAccount:service-899054873817@compute-system.iam.gserviceaccount.com"
+    ]
+  }
+
+  binding {
+    role    = "roles/editor"
+    members = [
+      "serviceAccount:899054873817-compute@developer.gserviceaccount.com",
+      "serviceAccount:899054873817@cloudservices.gserviceaccount.com"
+    ]
+  }
+
+  binding {
+    role    = "roles/logging.logWriter"
+    members = [
+      "serviceAccount:${google_service_account.atlantis.email}"
+    ]
+  }
+
+  binding {
+    role    = "roles/monitoring.metricWriter"
+    members = [
+      "serviceAccount:${google_service_account.atlantis.email}"
+    ]
+  }
+
+  binding {
+    role    = "roles/networkmanagement.serviceAgent"
+    members = [
+      "serviceAccount:service-899054873817@gcp-sa-networkmanagement.iam.gserviceaccount.com"
+    ]
+  }
+
+  binding {
+    role    = "roles/owner"
+    members = [
+      "user:linustws00@gmail.com"
+    ]
+  }
+
+  binding {
+    role    = "roles/storage.admin"
+    members = [
+      "user:linustws00@gmail.com"
+    ]
+  }
+}
+
+resource "google_project_iam_policy" "project" {
+  project     = local.project_id
+  policy_data = data.google_iam_policy.project.policy_data
+}
+
 resource "google_storage_bucket" "terraform_state" {
   name                        = "terraform-state-bucket-${local.project_id}"
   location                    = "US"
@@ -137,4 +182,15 @@ resource "google_storage_bucket" "terraform_state" {
   versioning {
     enabled = true
   }
+}
+
+data "google_iam_policy" "terraform_state" {
+  binding {
+    role    = "roles/storage.objectViewer"
+    members = ["serviceAccount:${google_service_account.atlantis.email}"]
+  }
+}
+resource "google_storage_bucket_iam_policy" "terraform_state" {
+  bucket      = google_storage_bucket.terraform_state.name
+  policy_data = data.google_iam_policy.terraform_state.policy_data
 }
