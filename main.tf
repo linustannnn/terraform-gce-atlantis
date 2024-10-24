@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">=6.8.0"
+    }
+  }
+
+  backend "gcs" {
+    bucket = google_storage_bucket.terraform_state.name
+  }
+}
+
 locals {
   project_id   = "atlantis-test-439520"
   region       = "us-east4"
@@ -41,13 +54,13 @@ resource "google_compute_network" "default" {
 }
 
 resource "google_compute_subnetwork" "default" {
-  name                       = "example-subnetwork"
-  ip_cidr_range              = "10.2.0.0/16"
-  region                     = local.region
-  network                    = google_compute_network.default.id
-  project                    = local.project_id
-  private_ip_google_access   = true
-#   private_ipv6_google_access = "BIDIRECTIONAL"
+  name                     = "example-subnetwork"
+  ip_cidr_range            = "10.2.0.0/16"
+  region                   = local.region
+  network                  = google_compute_network.default.id
+  project                  = local.project_id
+  private_ip_google_access = true
+  #   private_ipv6_google_access = "BIDIRECTIONAL"
 
   log_config {
     aggregation_interval = "INTERVAL_5_SEC"
@@ -110,3 +123,19 @@ module "atlantis" {
 #   min_tls_version = "TLS_1_2"
 #   project         = local.project_id
 # }
+
+#---------------------------------------------------------------#
+
+resource "google_storage_bucket" "terraform_state" {
+  name                        = "terraform-state-bucket-${local.project_id}"
+  location                    = "US"
+  storage_class               = "STANDARD"
+  project                     = local.project_id
+  force_destroy               = false
+  public_access_prevention    = "enforced"
+  uniform_bucket_level_access = true
+
+  versioning {
+    enabled = true
+  }
+}
