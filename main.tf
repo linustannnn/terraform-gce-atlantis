@@ -186,7 +186,7 @@ resource "google_storage_bucket" "terraform_state" {
 
 data "google_iam_policy" "terraform_state" {
   binding {
-    role    = "roles/storage.objectViewer"
+    role    = "roles/storage.objectUser"
     members = ["serviceAccount:${google_service_account.atlantis.email}"]
   }
 }
