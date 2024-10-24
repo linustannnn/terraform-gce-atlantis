@@ -236,17 +236,6 @@ resource "google_storage_bucket" "terraform_state" {
   }
 }
 
-data "google_iam_policy" "terraform_state" {
-  binding {
-    role    = "roles/storage.objectUser"
-    members = ["serviceAccount:${google_service_account.atlantis.email}"]
-  }
-}
-resource "google_storage_bucket_iam_policy" "terraform_state" {
-  bucket      = google_storage_bucket.terraform_state.name
-  policy_data = data.google_iam_policy.terraform_state.policy_data
-}
-
 resource "google_secret_manager_secret" "atlantis_gh_user" {
   secret_id = "atlantis-gh-user"
   project   = local.project_id
