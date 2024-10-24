@@ -190,7 +190,29 @@ data "google_iam_policy" "project" {
   binding {
     role = "roles/storage.admin"
     members = [
-      "user:linustws00@gmail.com"
+      "user:linustws00@gmail.com",
+      "serviceAccount:${google_service_account.atlantis.email}"
+    ]
+  }
+
+  binding {
+    role = "roles/secretmanager.admin"
+    members = [
+      "serviceAccount:${google_service_account.atlantis.email}"
+    ]
+  }
+
+  binding {
+    role = "roles/iam.securityAdmin"
+    members = [
+      "serviceAccount:${google_service_account.atlantis.email}"
+    ]
+  }
+
+  binding {
+    role = "roles/compute.admin"
+    members = [
+      "serviceAccount:${google_service_account.atlantis.email}"
     ]
   }
 }
